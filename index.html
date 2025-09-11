@@ -1,80 +1,45 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Video</title>
+  <meta charset="UTF-8">
+  <title>Vidéo Aléatoire en Boucle</title>
   <style>
-    html, body { height: 100%; margin: 0; background: #000; overflow: hidden; }
-    .wrap { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: #000; }
-    video { width: 100vw; height: 100vh; object-fit: cover; background: #000; }
-  </style>
-</head>
-<body>
-  <!-- Autoplay fiable sur mobile: muted + playsinline -->
-  <div class="wrap">
-    <video src="video.mp4" autoplay loop muted playsinline preload="auto"></video>
-  </div>
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Video</title>
-  <meta name="theme-color" content="#000000">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <style>
-    html, body { height: 100%; margin: 0; background: #000; }
-    .wrap { position: fixed; inset: 0; background: #000; }
-    /* 100dvh = hauteur viewport dynamique (évite les bandes liées à la barre d’adresse) */
-    video { width: 100vw; height: 100dvh; object-fit: cover; background: #000; }
-    .overlay {
-      position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
-      background: rgba(0,0,0,.5); color: #fff; font-family: system-ui, sans-serif;
-      -webkit-tap-highlight-color: transparent;
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+      background: black;
+      overflow: hidden;
     }
-    .overlay p {
-      padding: 12px 16px; border: 1px solid rgba(255,255,255,.25);
-      border-radius: 12px; backdrop-filter: blur(6px);
+    video {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover; /* remplit l’écran, pas de bandes noires (peut couper un peu) */
     }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <!-- autoplay fiable mobile: muted + playsinline -->
-    <video id="v" src="video.mp4" autoplay loop muted playsinline preload="auto"></video>
-  </div>
-
-  <!-- Un seul tap pour passer en plein écran -->
-  <div class="overlay" id="fs">
-    <p>Appuyez pour passer en plein écran</p>
-  </div>
+  <video id="player" autoplay muted playsinline loop></video>
 
   <script>
-    const v = document.getElementById('v');
-    const fs = document.getElementById('fs');
+    const videos = ["video1.mp4", "video2.mp4", "video3.mp4"];
+    const randomVideo = videos[Math.floor(Math.random() * videos.length)];
+    const player = document.getElementById("player");
+    player.src = randomVideo;
 
-    async function enterFullscreen() {
-      try {
-        if (v.requestFullscreen) await v.requestFullscreen();
-        else if (v.webkitEnterFullscreen) v.webkitEnterFullscreen(); // iOS anciens
-      } catch(e) { /* ignore */ }
-      fs.style.display = 'none';
-      v.play().catch(()=>{});
-    }
-
-    fs.addEventListener('click', enterFullscreen);
-    // Si l’utilisateur touche la vidéo sans être en fullscreen, on tente aussi
-    v.addEventListener('click', () => {
-      if (!document.fullscreenElement) enterFullscreen();
-    });
-
-    // Si on revient sur la page, relancer la lecture
-    document.addEventListener('visibilitychange', () => {
-      if (!document.hidden) v.play().catch(()=>{});
+    player.addEventListener("canplay", () => {
+      player.play();
+      if (player.requestFullscreen) {
+        player.requestFullscreen();
+      } else if (player.webkitRequestFullscreen) {
+        player.webkitRequestFullscreen();
+      } else if (player.msRequestFullscreen) {
+        player.msRequestFullscreen();
+      }
     });
   </script>
 </body>
