@@ -58,14 +58,11 @@
       align-self: start; justify-self: start;
       display: grid; gap: 6px;
     }
-    .kicker {
-      font-size: 14px; line-height: 1; color: var(--muted);
+    .top div {
+      font-size: 14px; line-height: 1.3;
       letter-spacing: .08em;
-    }
-    .name {
-      font-size: 14px; line-height: 1;
-      text-transform: none;
-      color: var(--muted); /* même gris que Fire., chair, wheel, trench */
+      color: var(--muted);
+      text-transform: none; /* pour respecter maj/min exactement */
     }
 
     .center {
@@ -124,8 +121,9 @@
   <div id="stage">
     <div id="overlay" aria-label="tap for video">
       <div class="top">
-        <div class="kicker">Fire.</div>
-        <div class="name">Paul Bizcarguenaga</div>
+        <div>Paul Bizcarguenaga</div>
+        <div>Fire.</div>
+        <div>DÔMES + OK!</div>
       </div>
 
       <div class="center">
