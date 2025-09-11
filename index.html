@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <title>tap for fire</title>
+  <title>tap for video</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#000000" />
 
@@ -34,7 +34,6 @@
       overflow: hidden;
     }
 
-    /* Scène plein écran (gère notch/arrondis) */
     #stage {
       position: fixed; inset: 0;
       width: var(--vw); height: var(--vh);
@@ -42,7 +41,6 @@
       background: var(--bg);
     }
 
-    /* Overlay typographique minimal */
     #overlay {
       position: absolute; inset: 0;
       display: grid;
@@ -55,7 +53,7 @@
       transition: opacity .35s ease;
       user-select: none;
     }
-    /* Top-left block */
+
     .top {
       align-self: start; justify-self: start;
       display: grid; gap: 6px;
@@ -66,10 +64,10 @@
     }
     .name {
       font-size: 14px; line-height: 1;
-      text-transform: none; /* garde la capitale initiale */
+      text-transform: none;
+      color: var(--muted); /* même gris que Fire., chair, wheel, trench */
     }
 
-    /* Center CTA */
     .center {
       align-self: center; justify-self: center;
       display: flex; align-items: center; justify-content: center;
@@ -100,7 +98,6 @@
     }
     #overlay:hover .cta { border-color: rgba(255,255,255,.4); transform: translateY(-1px); }
 
-    /* Bottom meta/menu */
     .bottom {
       align-self: end; justify-self: stretch;
       display: flex; align-items: baseline; justify-content: space-between;
@@ -110,7 +107,6 @@
       letter-spacing: .04em;
     }
 
-    /* Vidéo plein écran cachée avant le tap */
     video {
       display: none;
       position: absolute; inset: 0;
@@ -126,15 +122,14 @@
 </head>
 <body>
   <div id="stage">
-    <!-- Overlay -->
-    <div id="overlay" aria-label="tap for fire">
+    <div id="overlay" aria-label="tap for video">
       <div class="top">
-        <div class="kicker">fire</div>
+        <div class="kicker">Fire.</div>
         <div class="name">Paul Bizcarguenaga</div>
       </div>
 
       <div class="center">
-        <div class="cta">tap for fire</div>
+        <div class="cta">tap for video</div>
       </div>
 
       <div class="bottom">
@@ -143,12 +138,10 @@
       </div>
     </div>
 
-    <!-- Vidéo -->
     <video id="player" autoplay muted playsinline webkit-playsinline loop></video>
   </div>
 
   <script>
-    // --- Fallback pour navigateurs sans dvh/dvw (assure 100% visible) ---
     (function ensureViewportUnits() {
       if (CSS && CSS.supports && CSS.supports('height: 100dvh')) return;
       function setVars() {
@@ -162,7 +155,6 @@
       if (window.visualViewport) visualViewport.addEventListener('resize', setVars);
     })();
 
-    // --- App vidéo ---
     const videos  = ["video1.mp4", "video2.mp4", "video3.mp4"];
     const overlay = document.getElementById("overlay");
     const player  = document.getElementById("player");
@@ -182,33 +174,26 @@
       if (started) return;
       started = true;
 
-      // Source aléatoire + affichage
       const src = videos[Math.floor(Math.random() * videos.length)];
       player.src = src;
       player.style.display = "block";
 
-      // Lecture dans le même geste utilisateur
-      try { await player.play(); } catch(e) { /* ignore */ }
+      try { await player.play(); } catch (e) {}
 
-      // Fullscreen: doc puis vidéo (Chrome Android aime bien les deux)
       let fs = await enterFullscreen(document.documentElement);
       if (!fs) fs = await enterFullscreen(player);
 
-      // iOS fallback (plein écran natif vidéo si dispo)
       if (!fs && player.webkitEnterFullscreen) {
         try { player.webkitEnterFullscreen(); fs = true; } catch(e){}
       }
 
-      // Masque l'overlay
       overlay.style.opacity = 0;
       setTimeout(() => { overlay.style.display = "none"; }, 350);
     }
 
-    // Interaction (overlay complet cliquable)
     overlay.addEventListener("click", startExperience, { passive: true });
     overlay.addEventListener("touchend", (e) => { e.preventDefault(); startExperience(); }, { passive: false });
 
-    // Ajuste si le viewport change (barres qui se rétractent)
     window.addEventListener("resize", () => {
       player.style.width = getComputedStyle(document.documentElement).getPropertyValue('--vw') || '100dvw';
       player.style.height = getComputedStyle(document.documentElement).getPropertyValue('--vh') || '100dvh';
