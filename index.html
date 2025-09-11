@@ -1,74 +1,93 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Video Aléatoire Fullscreen</title>
+  <meta charset="UTF-8" />
+  <title>Tap for Fire</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <style>
     html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      width: 100%;
-      background: black;
-      overflow: hidden;
-      font-family: "Helvetica Neue", Arial, sans-serif;
+      margin: 0; padding: 0;
+      height: 100%; width: 100%;
+      background: black; overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
     }
-
     #overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      height: 100%;
-      width: 100%;
-      background: black;
-      color: white;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-size: 2rem;
-      letter-spacing: 0.1em;
-      cursor: pointer;
-      transition: opacity 0.5s ease;
+      position: fixed; inset: 0;
+      display: flex; justify-content: center; align-items: center;
+      color: #fff; background: #000;
+      letter-spacing: .12em; font-size: 2rem;
+      cursor: pointer; user-select: none;
+      transition: opacity .3s ease;
     }
-
+    #overlay span { opacity: .9; }
     video {
-      display: none; /* cachée au départ */
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover; /* remplit l’écran, pas de bandes noires */
+      display: none; /* cachée jusqu'au tap */
+      position: fixed; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover; background: #000;
     }
+    /* optionnel: pendant le fullscreen, on s'assure qu'il n'y a aucun scroll */
+    :fullscreen { overflow: hidden; background: #000; }
+    :-webkit-full-screen { overflow: hidden; background: #000; }
   </style>
 </head>
 <body>
-  <div id="overlay">TAP FOR FIRE</div>
-  <video id="player" autoplay muted playsinline loop></video>
+  <div id="overlay"><span>TAP FOR FIRE</span></div>
+
+  <!-- vidéo aléatoire, autoplay/loop inline -->
+  <video id="player" autoplay muted playsinline webkit-playsinline loop></video>
 
   <script>
     const videos = ["video1.mp4", "video2.mp4", "video3.mp4"];
-    const randomVideo = videos[Math.floor(Math.random() * videos.length)];
     const overlay = document.getElementById("overlay");
-    const player = document.getElementById("player");
+    const player  = document.getElementById("player");
 
-    overlay.addEventListener("click", () => {
-      // Masquer l’overlay
-      overlay.style.opacity = 0;
-      setTimeout(() => overlay.style.display = "none", 500);
+    let started = false;
 
-      // Charger la vidéo
-      player.src = randomVideo;
+    async function startExperience() {
+      if (started) return;
+      started = true;
+
+      // 1) Choix aléatoire + rendu
+      const src = videos[Math.floor(Math.random() * videos.length)];
+      player.src = src;
       player.style.display = "block";
 
-      // Lancer en plein écran
-      player.play();
-      if (player.requestFullscreen) {
-        player.requestFullscreen();
-      } else if (player.webkitRequestFullscreen) {
-        player.webkitRequestFullscreen();
-      } else if (player.msRequestFullscreen) {
-        player.msRequestFullscreen();
+      // 2) Lecture (dans le même geste utilisateur)
+      try { await player.play(); } catch (e) { /* ignore */ }
+
+      // 3) Fullscreen – on tente documentElement d'abord, puis la vidéo (Chrome Android aime bien les deux)
+      async function tryFsOn(el) {
+        if (!el) return false;
+        try {
+          if (el.requestFullscreen) { await el.requestFullscreen(); return true; }
+          if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); return true; }
+          if (el.msRequestFullscreen) { el.msRequestFullscreen(); return true; }
+        } catch (e) { /* ignore */ }
+        return false;
+      }
+
+      let entered = await tryFsOn(document.documentElement);
+      if (!entered) entered = await tryFsOn(player);
+
+      // iOS fallback (Safari engine) : plein écran vidéo natif si dispo
+      if (!entered && player.webkitEnterFullscreen) {
+        try { player.webkitEnterFullscreen(); entered = true; } catch (e) {}
+      }
+
+      // 4) Masquer l’overlay
+      overlay.style.opacity = 0;
+      setTimeout(() => overlay.style.display = "none", 300);
+    }
+
+    // Garde tout dans le même geste utilisateur
+    overlay.addEventListener("click", startExperience, { passive: true });
+    overlay.addEventListener("touchend", (e) => { e.preventDefault(); startExperience(); }, { passive: false });
+
+    // Si la session quitte le fullscreen, on peut relancer à la tape suivante (utile sur iOS)
+    document.addEventListener("fullscreenchange", () => {
+      if (!document.fullscreenElement) {
+        // on ne fait rien de spécial; la vidéo reste affichée
       }
     });
   </script>
