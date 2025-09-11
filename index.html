@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Vidéo Aléatoire en Boucle</title>
+  <title>Video Aléatoire Fullscreen</title>
   <style>
     html, body {
       margin: 0;
@@ -11,27 +11,57 @@
       width: 100%;
       background: black;
       overflow: hidden;
+      font-family: "Helvetica Neue", Arial, sans-serif;
     }
+
+    #overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 100%;
+      background: black;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 2rem;
+      letter-spacing: 0.1em;
+      cursor: pointer;
+      transition: opacity 0.5s ease;
+    }
+
     video {
+      display: none; /* cachée au départ */
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      object-fit: cover; /* remplit l’écran, pas de bandes noires (peut couper un peu) */
+      object-fit: cover; /* remplit l’écran, pas de bandes noires */
     }
   </style>
 </head>
 <body>
+  <div id="overlay">TAP FOR FIRE</div>
   <video id="player" autoplay muted playsinline loop></video>
 
   <script>
     const videos = ["video1.mp4", "video2.mp4", "video3.mp4"];
     const randomVideo = videos[Math.floor(Math.random() * videos.length)];
+    const overlay = document.getElementById("overlay");
     const player = document.getElementById("player");
-    player.src = randomVideo;
 
-    player.addEventListener("canplay", () => {
+    overlay.addEventListener("click", () => {
+      // Masquer l’overlay
+      overlay.style.opacity = 0;
+      setTimeout(() => overlay.style.display = "none", 500);
+
+      // Charger la vidéo
+      player.src = randomVideo;
+      player.style.display = "block";
+
+      // Lancer en plein écran
       player.play();
       if (player.requestFullscreen) {
         player.requestFullscreen();
